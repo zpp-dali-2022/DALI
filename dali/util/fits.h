@@ -26,6 +26,7 @@
 #include "dali/pipeline/data/sample_view.h"
 #include "dali/pipeline/data/tensor.h"
 
+// FIXME fits not numpy ?
 #define NUMPY_ALLOWED_TYPES                                                                        \
   (bool, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, float, float16, \
    double)

@@ -23,6 +23,7 @@
 #include "dali/operators/reader/loader/utils.h"
 #include "dali/pipeline/data/types.h"
 #include "dali/util/file.h"
+#include "dali/util/fits.h"
 
 #define max_number_of_axes 999
 
@@ -102,15 +103,18 @@ void FitsLoader::ReadSample(FitsFileWrapper& target) {
     fits_report_error(stderr, status);
   }
 
-  // TODO add header extensions
+  fits::HeaderData header;
+
+  ParseHeader(&header, infptr);
+
   fits_get_hdu_type(infptr, &hdutype, &status);
   if (status != 0) {
     fits_report_error(stderr, status);
   }
 
-  // read the header (check if type is image)
+  // read the main header (check if type is image)
   // get image dimensions and total number of pixels in image
-  if (hdutype == IMAGE_HDU) {
+  if (header.hdutype == IMAGE_HDU) {
     // get image dimensions
     fits_get_img_param(infptr, max_number_of_axes, &bitpix, &naxis, naxes, &status);
 
@@ -143,6 +147,21 @@ void FitsLoader::ReadSample(FitsFileWrapper& target) {
   target.data.Resize(shape, typeInfo->id);
   fits_read_img(infptr, datatype, first, totpix, &nulval, target.data.raw_mutable_data(), &anynul,
                 &status);
+
+  // FIXME -------------this is how to read extension headers --------------
+  // this is how to read extension headers
+  int hdunum, hdutype;
+  /* Get the number of HDUs in the file */
+  fits_get_num_hdus(infptr, &hdunum, &status);
+  /* Iterate over all HDUs */
+  for (int i = 1; i <= hdunum; i++) {
+    /* Move to the HDU */
+    fits_movabs_hdu(infptr, i, &hdutype, &status);
+    /* Get the HDU type */
+    fits_get_hdu_type(infptr, &hdutype, &status);
+    // TODO what should we do with it ?
+  }
+  // ------------------------------------------------------------------------
 
   // close the file handle
   infptr->Close();
