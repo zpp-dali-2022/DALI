@@ -53,6 +53,12 @@ class DLL_PUBLIC HeaderData {
   const TypeInfo *type_info = nullptr;
   bool compressed = false;
 
+  // compression parameters
+  int bytepix;
+  int blocksize;
+  int32_t tiles;
+  vector<int32_t> tile_sizes;
+
   DALIDataType type() const;
 
   size_t size() const;
@@ -97,6 +103,8 @@ DLL_PUBLIC void HandleFitsError(int status);
 
 /** @brief Wrapper that automatically handles cfitsio error checking.*/
 DLL_PUBLIC void FITS_CALL(int status);
+
+unsigned char **extract_compressed_data(fitsfile *fptr, int *status);
 
 }  // namespace fits
 }  // namespace dali
