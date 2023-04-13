@@ -46,6 +46,8 @@ void FitsLoaderGPU::ReadSample(FitsFileWrapperGPU& target) {
 
   // resize ouput vector according to the number of HDUs
   target.data.resize(hdu_indices_.size());
+  target.raw_data.resize(hdu_indices_.size());
+  target.header.resize(hdu_indices_.size());
 
   for (size_t output_idx = 0; output_idx < hdu_indices_.size(); output_idx++) {
     // move to appropiate hdu
@@ -55,6 +57,7 @@ void FitsLoaderGPU::ReadSample(FitsFileWrapperGPU& target) {
     fits::HeaderData header;
     try {
       fits::ParseHeader(header, current_file);
+      target.header[output_idx] = header;
     } catch (const std::runtime_error& e) {
       DALI_FAIL(e.what() + ". File: " + filename);
     }
@@ -68,10 +71,17 @@ void FitsLoaderGPU::ReadSample(FitsFileWrapperGPU& target) {
     }
     target.data[output_idx].Resize(header.shape, header.type());
 
-    // copy the image to host memory
-    fits::FITS_CALL(fits_read_img(current_file, header.datatype_code, 1, nelem, &nulval,
-                                  static_cast<uint8_t*>(target.data[output_idx].raw_mutable_data()),
-                                  &anynul, &status));
+    if (header.compressed) {
+      // extract and copy raw data for decoding done in runImpl
+      target.raw_data[output_idx] = fits::extract_compressed_data(current_file, &status);
+      DALI_ENFORCE(false, "got here loader 1");
+    } else {
+      // copy the image to host memory
+      fits::FITS_CALL(fits_read_img(
+          current_file, header.datatype_code, 1, nelem, &nulval,
+          static_cast<uint8_t*>(target.data[output_idx].raw_mutable_data()), &anynul, &status));
+    }
+
 
     // set metadata
     target.data[output_idx].SetMeta(meta);

@@ -136,6 +136,10 @@ void ParseHeader(HeaderData &parsed_header, fitsfile *src) {
                         std::multiplies<int32_t>());
     parsed_header.blocksize = (src->Fptr)->rice_blocksize;
     parsed_header.bytepix = (src->Fptr)->rice_bytepix;
+    parsed_header.maxtilelen = (src->Fptr)->maxtilelen;
+    parsed_header.zbitpix = (src->Fptr)->zbitpix;
+    parsed_header.rice_blocksize = (src->Fptr)->rice_blocksize;
+
 
     DALI_ENFORCE(parsed_header.blocksize > 0, "RICE_BLOCKSIZE value must be greater than 0!");
     DALI_ENFORCE(parsed_header.bytepix > 0, "RICE_BYTEPIX value must be greater than 0!");
@@ -269,9 +273,11 @@ unsigned char **extract_compressed_data(fitsfile *fptr, int *status) {
       }
     }
   }
+  if(row_sizes)
+    free(row_sizes);
 
-  free(row_sizes);
-  free(tile_sizes);
+  if(tile_sizes)
+    free(tile_sizes);
 
   return data;
 }

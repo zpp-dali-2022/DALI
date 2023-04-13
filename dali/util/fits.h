@@ -56,6 +56,10 @@ class DLL_PUBLIC HeaderData {
   // compression parameters
   int bytepix;
   int blocksize;
+  long maxtilelen; 
+  int zbitpix;
+  int rice_blocksize;
+ 
   int32_t tiles;
   vector<int32_t> tile_sizes;
 
@@ -104,7 +108,7 @@ DLL_PUBLIC void HandleFitsError(int status);
 /** @brief Wrapper that automatically handles cfitsio error checking.*/
 DLL_PUBLIC void FITS_CALL(int status);
 
-unsigned char **extract_compressed_data(fitsfile *fptr, int *status);
+DLL_PUBLIC unsigned char **extract_compressed_data(fitsfile *fptr, int *status);
 
 }  // namespace fits
 }  // namespace dali

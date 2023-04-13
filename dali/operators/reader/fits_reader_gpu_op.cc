@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include "dali/operators/reader/fits_reader_gpu_op.h"
+#include "dali/operators/reader/fits_decoder.cuh"
 
 #include <string>
 #include <vector>
@@ -27,8 +28,19 @@ void FitsReaderGPU::RunImpl(Workspace &ws) {
     for (int sample_id = 0; sample_id < batch_size; ++sample_id) {
       auto &sample = GetSample(sample_id);
 
+      if (sample.header[output_idx].compressed) {
+        DALI_ENFORCE(false, "got here1!");
+
+        rice_decompress(sample.raw_data[output_idx], output.raw_mutable_tensor(sample_id),
+                        sample.header[output_idx].bytepix, sample.header[output_idx].blocksize,
+                        sample.header[output_idx].tiles, sample.header[output_idx].maxtilelen,
+                        &sample.header[output_idx].tile_sizes[0]);
+
+        DALI_ENFORCE(false, "got here2!");
+      }
+
       cudaMemcpyAsync(output.raw_mutable_tensor(sample_id), sample.data[output_idx].raw_data(),
-                 sample.data[output_idx].nbytes(), cudaMemcpyHostToDevice);
+                      sample.data[output_idx].nbytes(), cudaMemcpyHostToDevice);
     }
   }
 }

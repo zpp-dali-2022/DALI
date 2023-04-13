@@ -40,6 +40,8 @@ namespace dali {
 
 struct FitsFileWrapperGPU {
   std::vector<Tensor<CPUBackend>> data;
+  std::vector<unsigned char**> raw_data; 
+  std::vector<fits::HeaderData> header; 
   std::string filename;
 };
 
